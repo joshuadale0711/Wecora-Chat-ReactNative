@@ -29,6 +29,7 @@ import com.dylanvann.fastimage.FastImageViewPackage;
 
 import io.invertase.firebase.messaging.RNFirebaseMessagingPackage;
 import io.invertase.firebase.notifications.RNFirebaseNotificationsPackage;
+import in.sriraman.sharedpreferences.RNSharedPreferencesReactPackage;
 
 public class MainApplication extends NavigationApplication {
 
@@ -50,7 +51,8 @@ public class MainApplication extends NavigationApplication {
             new ImagePickerPackage(),
             new FastImageViewPackage(),
             new VectorIconsPackage(),
-            new SharePackage()     
+            //new SharePackage(),
+            new RNSharedPreferencesReactPackage()     
             );
   }
 

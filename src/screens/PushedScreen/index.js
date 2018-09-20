@@ -95,8 +95,11 @@ export default class PushedScreen extends Component {
 
   onNavigatorEvent = (event: { id: string }) => {
     if (event.id == 'willAppear') {
-      const {Projects, navigator } = this.props
-      Projects.fetchList()
+      const { Projects, navigator } = this.props
+      Projects.fetchSectionedList()
+      if (SaveItem.selectedItem) {
+        navigator.setTitle({ title: "Select Project" })
+      } else { navigator.setTitle({ title: "Projects" }) }
     }
     if (event.type == 'NavBarButtonPress') {
       if (event.id == 'menu') {
@@ -108,12 +111,11 @@ export default class PushedScreen extends Component {
 
   render() {
     const { Counter, Projects, Account, navigator, SaveItem } = this.props;
-    var { listState, list, myProjects } = Projects;
-    if(SaveItem.selectedItem) {
-      navigator.setTitle({ title: "Select Project" })
-      if(Account.isProfessional)
-        list = myProjects
-    } else { navigator.setTitle({ title: "Projects" })}
+    var { listState, list, sectionedList, myProjects, mySectionedProjects } = Projects;
+    if (Account.isProfessional && SaveItem.shared){
+      list = myProjects
+      sectionedList = mySectionedProjects
+    }
     const showCreate = listState == stateObs.DONE && list.length == 0
     const showHint = listState == stateObs.DONE && list.length > 0 && !Account.dismissed
 
@@ -125,7 +127,7 @@ export default class PushedScreen extends Component {
             <WecoraTop icon={topParams.icon}
               text={topParams.text}
               textDes={topParams.textDes}
-              showAction = {topParams.showAction}
+              showAction={topParams.showAction}
               action={topParams.action ? {
                 text: topParams.action,
                 onPress: () => Constants.Global.openAddModal(this.props.navigator, true, modalProps.title, modalProps)
@@ -137,7 +139,7 @@ export default class PushedScreen extends Component {
           <View style={styles.top}>
             <WecoraTop icon={topParams.icon}
               text={topParams.text}
-              showAction = {true}
+              showAction={true}
               action={{
                 text: 'DISMISS',
                 onPress: () => { Account.dismiss() }
@@ -150,6 +152,7 @@ export default class PushedScreen extends Component {
               withIcon
               list={list.slice()}
               listState={listState}
+              sectionedList={sectionedList}
               onPress={(item) => {
                 this.props.navigator.push({
                   ...Constants.Screens.BOARDS_SCREEN,
@@ -213,7 +216,6 @@ const styles = StyleSheet.create({
   list: {
     flex: 2,
     width: '100%',
-    marginTop: 10
   },
   item: {
     width: '100%'

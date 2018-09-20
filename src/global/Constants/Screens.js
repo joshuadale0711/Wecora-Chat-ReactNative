@@ -32,6 +32,11 @@ export default {
     title  : 'Save Image',
     backButtonTitle: ''
   },
+  SAVE_ITEMS: {
+    screen : 'app.SaveItems',
+    title  : 'Save Images',
+    backButtonTitle: ''
+  },
   SIGNIN_SCREEN: {
     screen : 'app.SignInScreen'
   },

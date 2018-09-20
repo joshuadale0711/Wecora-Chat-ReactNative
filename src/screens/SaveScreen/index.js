@@ -81,7 +81,7 @@ export default class SaveScreen extends Component {
 
     render() {
         const { Projects, Account, SaveItem, navigator } = this.props;
-        const { listState, list, myProjects } = Projects;
+        const { listState, list, myProjects, mySectionedProjects } = Projects;
         const showCreate = listState == stateObs.DONE && list.length == 0
         const showHint = listState == stateObs.DONE && list.length > 0 && !Account.dismissed
 
@@ -94,6 +94,7 @@ export default class SaveScreen extends Component {
                     <WecoraList
                         list={myProjects}
                         listState={listState}
+                        sectionedList={mySectionedProjects}
                         onPress={(item) => {
                             SaveItem.setGrandParent(item)
                             navigator.push({
@@ -123,13 +124,12 @@ const styles = StyleSheet.create({
     list: {
         flex: 2,
         width: '100%',
-        marginTop: 10
     },
     item: {
         width: '100%'
     },
     loading: {
-        paddingVertical: 20
+        marginVertical: 20
     },
     fab: {
         alignSelf: 'flex-end',

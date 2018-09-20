@@ -57,6 +57,10 @@ class GeneralApi {
     )
   }
 
+  delToken = (fcmID) => {
+    return axios.delete(this.url + '/devices/' + fcmID + this.token())
+  }
+
   urlTobase64 = (url) => {
     return axios.get(url, {
       responseType: 'arraybuffer'
@@ -66,6 +70,10 @@ class GeneralApi {
 
   fetchProjects = () => {
     return axios(this.url + '/projects' + this.token());
+  }
+
+  fetchSectionedProjects = () => {
+    return axios(this.url + '/projects' + this.token() + '&grouped=true');
   }
 
   fetchLabels = () => {

@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { inject, observer } from 'mobx-react/native';
 
+import { PermissionsAndroid } from 'react-native';
+
 import firebase from 'react-native-firebase';
 import NavButtons from '../../global/NavButtons';
 import NavBar from '../../global/NavBar';
@@ -32,12 +34,17 @@ export default class SplashScreen extends Component {
     static navigatorStyle = NavBar.Hidden;
 
     constructor(props: {}) {
+        Constants.Global.ISAPPOPEN = true
         super(props);
         this.state = {
             uri: ''
         }
-        const { App, navigator } = this.props;
+        const { App, navigator, SaveItem, shared } = this.props;
         App.rootNavigator = navigator;
+        if(shared){
+            let event = {url : shared}
+            SaveItem.handleDeepLink(event)
+        }
     }
 
     componentWillMount = () => {
@@ -62,26 +69,50 @@ export default class SplashScreen extends Component {
         // }
     }
 
+    requestReadPermission = async () => {
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+            {
+              'title': 'Read Storage Permission',
+              'message': 'Wecora needs this permission to upload images to your board'
+            }
+          )
+          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            //console.log("You can use the camera")
+          } else {
+              this.props.SaveItem.clearSelected()
+            //console.log("Camera permission denied")
+          }
+        } catch (err) {
+            this.props.SaveItem.clearSelected()
+          //console.warn(err)
+        }
+      }
+
 
     componentDidMount = async () => {
         const { App, SaveItem, Projects, Boards, Chats } = this.props;
         Chats.subscribeChat()
         try {
+            await this.requestReadPermission()
             const enabled = await firebase.messaging().hasPermission();
             if (!enabled)
                 await firebase.messaging().requestPermission();
-            const notificationOpen: NotificationOpen = await firebase.notifications().getInitialNotification();
-            if (notificationOpen) {
-                const action = notificationOpen.action;
-                const notification: Notification = notificationOpen.notification;
-                const { project_id, board_id } = notification.data
-                await App.navigateNotification(project_id, board_id)
-            } else {
+            // const notificationOpen: NotificationOpen = await firebase.notifications().getInitialNotification();
+            // if (notificationOpen) {
+            //     const action = notificationOpen.action;
+            //     const notification: Notification = notificationOpen.notification;
+            //     const { project_id, board_id } = notification.data
+            //     await App.navigateNotification(project_id, board_id)
+            // } else {
+            // }
+            firebase.notifications().cancelAllNotifications()
+                firebase.notifications().removeAllDeliveredNotifications()
                 setTimeout(() => {
                     if (SaveItem.shared == undefined)
                         App.navigate()
                 }, 1000);
-            }
         } catch (error) {
             console.log(error)
         }
@@ -96,7 +127,7 @@ export default class SplashScreen extends Component {
                     <Image style={styles.icon}
                         source={Constants.Images.Wecora} />
                 </View>
-                <Text style={styles.icon_text}>Wecora v2.9</Text>
+                <Text style={styles.icon_text}>Wecora v3.3</Text>
             </View>
         );
     }

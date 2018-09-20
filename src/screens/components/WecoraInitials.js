@@ -19,13 +19,17 @@ export default class WecoraInitials extends Component {
 
     constructor(props) {
         super(props)
-
+        this.state = { error: false}
     }
     renderCircle = () => {
         const { avatar, ellipse } = this.props
         const { initials, color = '#808080', textColor = "#fff" } = this.props
         if (avatar && !ellipse)
-            return (<Image style={styles.circle} resizeMode={'cover'} source={{ uri: avatar }} />)
+            return (this.state.error ? <View style={[styles.circle, { backgroundColor: color }]}>
+                <Text style={[styles.text, { color: textColor }]}>{initials}</Text>
+            </View> :
+                <Image style={styles.circle} resizeMode={'cover'} source={{ uri: avatar }} 
+                onError={() => this.setState({ error: true })} />)
         else if (avatar && ellipse)
             return (<ImageBackground style={styles.circle} resizeMode={'cover'} source={Constants.Images.EllIPSE}>
                 <Image style={styles.minicircle} resizeMode={'cover'} source={{ uri: avatar }} />

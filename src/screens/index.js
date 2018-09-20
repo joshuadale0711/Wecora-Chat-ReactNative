@@ -21,6 +21,7 @@ import FilterScreen from './FilterScreen';
 import FilterItemsScreen from './FilterItemsScreen';
 import SaveScreen from './SaveScreen';
 import SaveItem from './SaveItem';
+import SaveItems from './SaveItems';
 import SaveBoard from './SaveBoard';
 import ImageViewer from './ImageViewer';
 import ParserScreen from './ParserScreen';
@@ -47,6 +48,7 @@ export function registerScreens(store: {}, Provider: {}) {
   Navigation.registerComponent(Constants.Screens.SAVE_SCREEN.screen, () => SaveScreen, store, Provider);
   Navigation.registerComponent(Constants.Screens.SAVE_BOARD.screen, () => SaveBoard, store, Provider);
   Navigation.registerComponent(Constants.Screens.SAVE_ITEM.screen, () => SaveItem, store, Provider);
+  Navigation.registerComponent(Constants.Screens.SAVE_ITEMS.screen, () => SaveItems, store, Provider);
   Navigation.registerComponent(Constants.Screens.IMAGE_VIEWER.screen, () => ImageViewer, store, Provider);
   Navigation.registerComponent(Constants.Screens.PARSER_SCREEN.screen, () => ParserScreen, store, Provider);
 

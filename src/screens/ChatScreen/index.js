@@ -2,7 +2,7 @@
 
 import React, { Component } from 'react';
 import {
-    AppRegistry,
+    AppRegistry, AppState,
     StyleSheet,
     Text,
     View,
@@ -112,11 +112,12 @@ export default class ChatScreen extends Component {
 
 
     componentDidMount() {
-        const { SaveItem, Account } = this.props
+        const { SaveItem, Account, Chats } = this.props
         this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow);
         if (SaveItem.selectedItem) {
-            if (Account.isProfessional)
-                this.showSaveModal()
+            if (Account.isProfessional) {
+                this.showSaveModal(SaveItem.selectedItems)
+            }
             else {
                 let source = { uri: SaveItem.selectedItem };
                 this.setState({
@@ -126,6 +127,15 @@ export default class ChatScreen extends Component {
                 SaveItem.clearSelected()
             }
         }
+
+        AppState.addEventListener('change', (state) => {
+            if (state === 'active') {
+                Chats.updateChatExt()
+            }
+            if (state === 'background') {
+
+            }
+        })
 
     }
 
@@ -179,7 +189,7 @@ export default class ChatScreen extends Component {
         else {
 
             //let source = { uri: 'data:image/jpeg;base64,' + resp.data };
-            
+
             this.setState({
                 ...this.state,
                 selectedImageSource: resp
@@ -197,12 +207,17 @@ export default class ChatScreen extends Component {
         } else return false
     }
 
-    showSaveModal = () => {
+    showSaveModal = (multi) => {
         const { SaveItem, Chats, Boards, navigator } = this.props
         SaveItem.setGrandParent(Boards.parent)
         SaveItem.setParent(Chats.parent)
-        Constants.Global.openSaveModal(navigator, true,
-            modalPropsSave.title, modalPropsSave)
+        if (multi) {
+            Constants.Global.openMultiSaveModal(navigator, true,
+                modalPropsSave.title, modalPropsSave)
+        } else {
+            Constants.Global.openSaveModal(navigator, true,
+                modalPropsSave.title, modalPropsSave)
+        }
     }
 
     resetState = () => {
@@ -236,7 +251,7 @@ export default class ChatScreen extends Component {
     }
 
     render() {
-        const { Boards, Chats, navigator, SaveItem } = this.props;
+        const { Boards, Chats, navigator, SaveItem, item } = this.props;
         const { selectedImageSource, message } = this.state
 
         var options = {
@@ -323,8 +338,10 @@ export default class ChatScreen extends Component {
                     {selectedImageSource &&
                         <View style={styles.selectedImage}>
                             <FastImage
-                                style={{height: 160,
-                                    width: '100%'}}
+                                style={{
+                                    height: 160,
+                                    width: '100%'
+                                }}
                                 source={selectedImageSource}
                                 resizeMode={FastImage.resizeMode.cover}
                             />
@@ -350,7 +367,7 @@ export default class ChatScreen extends Component {
                         if (index == 1) {
                             navigator.push({
                                 ...Constants.Screens.ITEMS_SCREEN,
-                                title: "Boards",
+                                title: item.name,
                             });
                         }
                         if (index == 2) {
@@ -392,7 +409,7 @@ export default class ChatScreen extends Component {
 
                 <ActionSheet
                     ref={o => this.saveActionSheet = o}
-                    options={['SAVE TO ITEM LIBRARY']}
+                    options={['SAVE TO BOARD']}
                     onPress={(index) => {
                         if (index == 1) {
                             setTimeout(() => {

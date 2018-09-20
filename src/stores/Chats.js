@@ -12,6 +12,7 @@ import Pusher from 'pusher-js/react-native';
 import pusherConfig from '../pusher.json';
 import ImgToBase64 from 'react-native-image-base64';
 import { Navigation } from 'react-native-navigation';
+var binaryToBase64 = require('binaryToBase64');
 
 class Store {
 
@@ -112,9 +113,16 @@ class Store {
 
             if (attachment && attachment.uri) {
                 data = [attachment.uri]
-                if (!attachment.uri.includes(';base64,')) {
-                    data = yield ImgToBase64.getBase64String(data[0])
+                if (data[0].includes("https://cdn-staging.wecora.com/attachment")) {
+                    data[0] = data[0].replace('large', 'original')
+                }
+                else if (data[0].includes('file:///') || data[0].includes('/Shared/AppGroup/')) {
+                    data[0] = yield ImgToBase64.getBase64String(data[0])
                     data = ['data:image/jpeg;base64,' + data]
+                }
+                else if (!data[0].includes(';base64,')) {
+                    data = yield GeneralApi.urlTobase64(data[0])
+                    data = ['data:image/jpeg;base64,' + binaryToBase64(data.data)]
                 }
             }
             //console.log(data)

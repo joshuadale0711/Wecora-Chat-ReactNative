@@ -20,6 +20,8 @@ import WecoraItem from '../components/WecoraItem';
 import NavButtons from '../../global/NavButtons';
 import NavBar from '../../global/NavBar';
 
+import WecoraListHeader from '../components/WecoraListHeader';
+
 import Constants from '../../global/Constants';
 const stateObs = Constants.Global.state
 
@@ -71,9 +73,20 @@ export default class SaveBoard extends Component {
 
   render() {
     const { SaveItem, navigator } = this.props;
-    const { listState, list } = SaveItem;
+    const { listState, list, professional } = SaveItem;
     return (
       <View style={styles.container}>
+
+       {
+          professional &&
+          <ElevatedView elevation={3} style={styles.header}>
+            <WecoraListHeader
+              title={professional.full_name}
+              subTitle={professional.company_name}
+              image={professional.pic.includes("missing") ? undefined : professional.pic}
+            />
+          </ElevatedView>
+        }
         
           <View style={styles.list}>
             <WecoraList
@@ -114,6 +127,10 @@ const styles = StyleSheet.create({
   },
   top: {
     flex: 2
+  },
+  header: {
+    width: '100%',
+    backgroundColor: '#fff'
   },
   list: {
     flex: 1,

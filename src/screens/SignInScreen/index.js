@@ -70,8 +70,6 @@ export default class SignInScreen extends Component {
 
     }
 
-    
-
     getForm = () => {
         const { Account, navigator } = this.props;
         const { username, password } = this.state;

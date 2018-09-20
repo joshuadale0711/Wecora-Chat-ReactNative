@@ -14,19 +14,23 @@ class Store {
     @observable errors = undefined;
     @observable parent = undefined;
     @observable list = []
+    @observable professional = undefined
 
 
     fetchList = flow(function* (parent) {
         if (this.parent !== parent) {
             this.parent = parent
             this.list = []
+            this.professional = undefined
             this.listState = stateObs.LOADING
             try {
-                const list = yield GeneralApi.fetchBoards(this.parent.id)
-                this.listState = stateObs.DONE
-                this.list = list.data.boards.sort((a, b) =>
+                var list = yield GeneralApi.fetchBoards(this.parent.id)
+                list = list.data.boards
+                if(list[0] && list[0].professional )
+                    this.professional = list[0].professional 
+                this.list = list.sort((a, b) =>
                     a.name.localeCompare(b.name))
-
+                this.listState = stateObs.DONE
                 //console.log(this.list)
             } catch (error) {
                 this.listState = stateObs.ERROR
@@ -37,16 +41,20 @@ class Store {
 
     @action
     setList = async (parent, id) => {
-        const list = await GeneralApi.fetchBoards(parent.id)
+        var list = await GeneralApi.fetchBoards(parent.id)
         runInAction(() => {
             this.parent = parent
             this.list = []
             this.listState = stateObs.LOADING
             try {
 
-                this.listState = stateObs.DONE
-                this.list = list.data.boards.sort((a, b) =>
+                list = list.data.boards
+                if(list[0] && list[0].professional )
+                    this.professional = list[0].professional 
+                this.list = list.sort((a, b) =>
                     a.name.localeCompare(b.name))
+                this.listState = stateObs.DONE
+               
 
                 //console.log(this.list)
             } catch (error) {

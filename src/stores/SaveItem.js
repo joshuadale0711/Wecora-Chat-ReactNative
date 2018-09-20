@@ -28,8 +28,9 @@ class Store {
     @observable selectedError = undefined
     @observable selectedURL = undefined
     @observable parseURL = undefined
-    
-    
+    @observable selectedItems = undefined
+
+
     @observable description = undefined
     @observable unit_cost = undefined
     @observable selling_price = undefined
@@ -39,6 +40,7 @@ class Store {
     @observable id = undefined
     @observable ideaId = undefined
 
+    @observable professional = undefined
 
     constructor() {
         if (Platform.OS == 'ios') {
@@ -60,7 +62,7 @@ class Store {
         if (event.url) {
             if (Platform.OS == 'ios') {
                 const checkUrl = event.url.replace('wecora://', '')
-                if( checkUrl == '=parseHTML=?JSON=') {
+                if (checkUrl == '=parseHTML=?JSON=') {
                     return this.getSavedData()
                 }
                 else if (checkUrl.includes("currentUrl") && checkUrl.includes("currentTitle") && checkUrl.includes("html")) {
@@ -70,19 +72,24 @@ class Store {
                     App.navigate()
                     return
                 }
-                else
+                else {
                     this.setSelected(checkUrl, true)
+                }
             }
             else {
                 var url = event.url.replace('app://wecoraShare/', '')
-                var name = url.substring(url.lastIndexOf('/') + 1).replace(/\.[^/.]+$/, "")
-                if (name.includes('@'))
-                    name = name.split('@')[1]
-                this.setSelected(url, true, name)
+                //Toast.show('Adding item.  Please wait… ' + url)
+                this.setSelected(url, true)
+                
+                // var name = url.substring(url.lastIndexOf('/') + 1).replace(/\.[^/.]+$/, "")
+                // if (name.includes('@'))
+                //     name = name.split('@')[1]
+                // this.setSelected(url, true, name)
             }
-            if (this.selectedItem == undefined) this.setSelectedError() 
+            if (this.selectedItem == undefined) this.setSelectedError()
             else {
                 Toast.show('Adding item.  Please wait…')
+                console.log(this.selectedItem)
                 App.navigate()
             }
 
@@ -94,7 +101,7 @@ class Store {
             if (!err && data) {
                 data = data.split("=>>=>")
                 if (data.length == 2 && new Date().getTime() - data[0] <= 1 * 30 * 1000) {
-                    this.handleDeepLink({ url: data[1] })       
+                    this.handleDeepLink({ url: data[1] })
                 }
                 userDefaults.empty()
             }
@@ -105,11 +112,18 @@ class Store {
         this.grandParent = grandParent
         this.list = []
         this.listState = stateObs.LOADING
+        this.professional = undefined
         try {
-            const list = yield GeneralApi.fetchBoards(this.grandParent.id)
-            this.listState = stateObs.DONE
-            this.list = list.data.boards.sort((a, b) =>
-                a.name.localeCompare(b.name))
+
+            var list = yield GeneralApi.fetchBoards(this.grandParent.id)
+                list = list.data.boards
+                if(list[0] && list[0].professional )
+                    this.professional = list[0].professional 
+                this.list = list.sort((a, b) =>
+                    a.name.localeCompare(b.name))
+                this.listState = stateObs.DONE
+                
+            
             //console.log(this.list)
         } catch (error) {
             this.listState = stateObs.ERROR
@@ -119,6 +133,34 @@ class Store {
     })
 
 
+    createMultiple = flow(function* () {
+        this.createState = stateObs.LOADING
+        const details = {}
+        try {
+            //var data = []
+            if (this.selectedItems) {
+                for (const item of this.selectedItems) {
+                    var data = item
+                    if (data.includes('file:///') || data.includes('/Shared/AppGroup/')) {
+                        data = yield ImgToBase64.getBase64String(data)
+                        data = 'data:image/jpeg;base64,' + data
+                    }
+
+                    if (this.parent)
+                        yield GeneralApi.createItemBoard(this.parent.id, details, data)
+                    else if (this.grandParent)
+                        yield GeneralApi.createItemProject(this.grandParent.id, details, data)
+                }
+            }
+            this.createState = stateObs.DONE
+            this.clearSelected()
+            //console.log(resp.data)
+        } catch (error) {
+            this.createState = stateObs.ERROR
+            //console.log(error.message)
+        }
+    })
+
     create = flow(function* (details) {
         this.createState = stateObs.LOADING
 
@@ -126,7 +168,7 @@ class Store {
             var data = []
             if (this.selectedItem) {
                 data = this.selectedItem
-                if(data.includes("https://cdn-staging.wecora.com/attachment")) {
+                if (data.includes("https://cdn-staging.wecora.com/attachment")) {
                     data = data.replace('large', 'original')
                 }
                 if (data.includes('file:///') || data.includes('/Shared/AppGroup/')) {
@@ -139,7 +181,7 @@ class Store {
             else if (this.grandParent)
                 yield GeneralApi.createItemProject(this.grandParent.id, details, data)
             this.createState = stateObs.DONE
-            this.selectedItem = undefined
+            this.clearSelected()
             Chats.updateChatExt()
             //console.log(resp.data)
         } catch (error) {
@@ -165,7 +207,7 @@ class Store {
             // else if (this.grandParent)
             //     yield GeneralApi.createItemProject(this.grandParent.id, details, data)
             this.createState = stateObs.DONE
-            this.selectedItem = undefined
+            this.clearSelected()
             //console.log(resp.data)
         } catch (error) {
             this.createState = stateObs.ERROR
@@ -190,11 +232,36 @@ class Store {
         this.grandParent = grandParent
     }
 
-    @action setSelected(selectedItem, shared, name, selectedURL, ideaId,
+    getParsedData = (selectedItem) => {
+        if (selectedItem && selectedItem.includes("file:///")) {
+            var list = selectedItem.split("file:///")
+            if (Platform.OS == 'android') {
+                list.map((ind, i) => {
+                    list[i] = "file:///" + ind
+                })
+            }
+            const res = list.slice(1)
+            if (res.length < 2) res = undefined
+            return {
+                selectedItem: list[1],
+                selectedItems: res
+            }
+        } else {
+            return {
+                selectedItem: selectedItem,
+                selectedItems: undefined
+            }
+        }
+
+    }
+
+    @action setSelected(selectedItemo, shared, name, selectedURL, ideaId,
         id, description, unit_cost, selling_price,
         unit_cost_currency, selling_price_currency, quantity) {
 
+        const { selectedItem, selectedItems } = this.getParsedData(selectedItemo)
         this.selectedItem = selectedItem
+        this.selectedItems = selectedItems
         this.shared = shared
         this.name = name
         this.selectedURL = selectedURL
@@ -204,12 +271,13 @@ class Store {
         this.ideaId = ideaId
         this.id = id
         this.description = description
-        this.unit_cost = unit_cost 
+        this.unit_cost = unit_cost
         this.selling_price = selling_price
         this.unit_cost_currency = unit_cost_currency
         this.selling_price_currency = selling_price_currency
         this.quantity = quantity
     }
+
     @action clearSelected() {
         this.selectedItem = undefined
         this.shared = undefined
@@ -217,12 +285,13 @@ class Store {
         this.selectedError = undefined
         this.parseURL = undefined
         this.selectedURL = undefined
+        this.selectedItems = undefined
 
 
         this.ideaId = undefined
         this.id = undefined
         this.description = undefined
-        this.unit_cost = undefined 
+        this.unit_cost = undefined
         this.selling_price = undefined
         this.unit_cost_currency = undefined
         this.selling_price_currency = undefined

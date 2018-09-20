@@ -39,9 +39,12 @@ const startSingleScreenApp = () => {
     },
     appStyle: {
       orientation: 'portrait',
-    }
+    },
+    animated: false,
   });
 }
+
+
 
 const openLoginModalIn = (navigator: { showModal: Function }, withCancelButton: boolean = true, ) => {
   navigator.showModal({
@@ -72,6 +75,15 @@ const openSearchModal = (navigator: { showModal: Function }, withCancelButton: b
 const openSaveModal = (navigator: { showModal: Function }, withCancelButton: boolean = true, title: String = '', props ) => {
   navigator.showModal({
     ...Constants.Screens.SAVE_ITEM,
+    title: title,
+    passProps: { ...props, withCancelButton },
+    overrideBackPress: true,
+  });
+}
+
+const openMultiSaveModal = (navigator: { showModal: Function }, withCancelButton: boolean = true, title: String = '', props ) => {
+  navigator.showModal({
+    ...Constants.Screens.SAVE_ITEMS,
     title: title,
     passProps: { ...props, withCancelButton },
     overrideBackPress: true,
@@ -301,6 +313,9 @@ const CurrencyList = [
   { name: 'ZWR' },
 ]
 
+const ISSHARED = false
+const ISAPPOPEN = false
+
 export default {
   startSingleScreenApp,
   startTabBasedApp,
@@ -308,9 +323,12 @@ export default {
   openLoginModalIn,
   openSearchModal,
   openSaveModal,
+  openMultiSaveModal,
   openImageModal,
   state,
   itemType,
   removeDuplicates,
-  CurrencyList
+  CurrencyList,
+  ISSHARED,
+  ISAPPOPEN
 }

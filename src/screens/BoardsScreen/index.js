@@ -17,6 +17,7 @@ import WecoraChat from '../components/WecoraChat';
 import WecoraButton from '../components/WecoraButton';
 import WecoraList from '../components/WecoraList';
 import WecoraItem from '../components/WecoraItem';
+import WecoraListHeader from '../components/WecoraListHeader';
 import NavButtons from '../../global/NavButtons';
 import NavBar from '../../global/NavBar';
 
@@ -63,6 +64,7 @@ export default class BoardsScreen extends Component {
     topParams.showAction = props.Account.isProfessional
   }
 
+
   componentWillMount = () => {
     const { Boards, item, navigator } = this.props
     Boards.fetchList(item)
@@ -70,15 +72,10 @@ export default class BoardsScreen extends Component {
 
   render() {
     const { Boards, Projects, navigator } = this.props;
-    const { listState, list } = Boards;
-    const showCreate = listState == stateObs.DONE && list.length == 0
-    // SaveItem.selectedItem ?
-    //   navigator.setTitle({ title: "Select Board" }) 
-    //   : navigator.setTitle({ title: "Boards" }) 
+    const { listState, list, professional } = Boards;
     
-    // ToastAndroid.show(list
-    //   .map(todo => todo.unread_count)
-    //   .join(", "), ToastAndroid.LONG);
+    const showCreate = listState == stateObs.DONE && list.length == 0
+
     return (
       <View style={styles.container}>
         {showCreate &&
@@ -93,7 +90,16 @@ export default class BoardsScreen extends Component {
               } : undefined} />
           </View>
         }
-
+        {
+          professional &&
+          <ElevatedView elevation={3} style={styles.header}>
+            <WecoraListHeader
+              title={professional.full_name}
+              subTitle={professional.company_name}
+              image={professional.pic.includes("missing") ? undefined : professional.pic}
+            />
+          </ElevatedView>
+        }
         <View style={styles.list}>
           <WecoraList
             withIcon
@@ -143,6 +149,10 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     marginVertical: 10
+  },
+  header: {
+    width: '100%',
+    backgroundColor: '#fff'
   },
   fab: {
     alignSelf: 'flex-end',

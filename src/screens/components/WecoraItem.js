@@ -49,11 +49,11 @@ export default class WecoraItem extends Component {
 
                          {leftImage &&
                             <FastImage
-                                style={{height: 80, width: 80 }}
+                                style={{height: 100, width: 100 }}
                                 source={{
                                     uri: leftImage
                                 }}
-                                resizeMode={FastImage.resizeMode.center}
+                                resizeMode={FastImage.resizeMode.stretch}
                             />
                         }
 

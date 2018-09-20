@@ -32,11 +32,11 @@ class Store {
         const account_id = res.data.account_id
         const account_type = res.data.account_type
         var b  = res.data.access_token.charAt(0)
-        const fcmToken = await firebase.messaging().getToken();
-        if(fcmToken){
-          //console.log(fcmToken)
-          //Toast.show(fcmToken)
-          await GeneralApi.device(fcmToken, Platform.OS, access_token)
+        const fcm_token = await firebase.messaging().getToken();
+        if(fcm_token){
+          //console.log(fcm_token)
+          //Toast.show(fcm_token)
+          await GeneralApi.device(fcm_token, Platform.OS, access_token)
         } else {
           //console.log("foomed")
           //Toast.show('Unable To fetch token, Please try again!')
@@ -46,7 +46,7 @@ class Store {
         runInAction(() => {
           this.state = stateObs.DONE
           this.authorized = true;
-          this.current = { username, password, access_token, account_id, account_type };
+          this.current = { username, password, access_token, account_id, account_type, fcm_token };
         })
         //console.log(res)
         return this.state
@@ -125,6 +125,7 @@ class Store {
 
   @action logout = () => {
     return new Promise((resolve, reject) => {
+      GeneralApi.delToken(this.current.fcm_token)
       this.authorized = false;
       this.dismissed = false;
       this.current = {};

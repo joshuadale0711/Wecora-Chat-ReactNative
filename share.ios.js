@@ -36,7 +36,6 @@ export default class Share extends Component {
         type,
         value
       })
-
       if (type.includes("json")) {
         const millis = new Date().getTime()
         userDefaults.set("data", millis + "=>>=>" + value, "group.com.wecoraShare", (err, data) => {
@@ -50,14 +49,24 @@ export default class Share extends Component {
       else {
         const appGroupPath = await RNFS.pathForGroup('group.com.wecoraShare')
         const millis = new Date().getTime()
-        const filename = millis + '.JPG'
-        const destination = `${appGroupPath}/${filename}`
-        await RNFS.copyFile(value, destination)
-        userDefaults.set("data", millis + "=>>=>" + destination, "group.com.wecoraShare", (err, data) => {
+        const result  = ''
+        var i = -1
+        for (const str of value.split("file:///")){
+          i++
+          if (i > 0) {
+            "file:///" + str
+            const filename = millis + 'a' + i +  '.JPG'
+            const destination = `${appGroupPath}/${filename}`
+            result += "file:///" + destination
+            await RNFS.copyFile(str, destination)
+          }
+        }
+
+        userDefaults.set("data", millis + "=>>=>" + result, "group.com.wecoraShare", (err, data) => {
           if (!err) {
             this.onClose()
-            ShareExtension.openURL(`wecora://${destination}`)
-            this.setState({ type: data })
+            ShareExtension.openURL(`wecora://${result}`)
+            //this.setState({ type: data })
           }
         })
       }
@@ -81,7 +90,7 @@ export default class Share extends Component {
   render() {
     return (
       <View style={{ backgroundColor: '#E55A4F', flex: 1, paddingTop: 15, justifyContent: 'center', alignItems: 'center' }}>
-        {/* <Text>{this.state.type} : {this.state.value}</Text> */}
+        {/* <Text>{this.state.err} : {this.state.blue}</Text> */}
         {
           // this.state.err.message &&
 
